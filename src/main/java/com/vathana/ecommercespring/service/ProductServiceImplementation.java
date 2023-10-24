@@ -91,13 +91,51 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     @Override
-    public Product updateProduct(Long productId, Product req) throws ProductException {
+    public Product updateProduct(Long productId, CreateProductRequest req) throws ProductException {
         Product product = findProductById(productId);
+        System.out.println(product);
 
         // if (req.getQuantity() != 0) {
         //    product.setQuantity(req.getQuantity());
         // }
-        product = req;
+        product.setBrand(req.getBrand());
+        product.setColor(req.getColor());
+        product.setDescription(req.getDescription());
+        product.setDiscountedPercent(req.getDiscountedPercent());
+        product.setDiscountedPrice(req.getDiscountedPrice());
+        product.setImageUrl(req.getImageUrl());
+        product.setPrice(req.getPrice());
+        product.setQuantity(req.getQuantity());
+        Category topLevel = categoryRepository.findByName(req.getTopLevelCategory());
+
+        if (topLevel == null) {
+            Category topLevelCategory = new Category();
+            topLevelCategory.setName(req.getTopLevelCategory());
+            topLevelCategory.setLevel(1);
+
+            topLevel = categoryRepository.save(topLevelCategory);
+        }
+
+        product.setCategory(topLevel);
+
+        if (req.getSecondLevelCategory() != null) {
+            Category secondLevel = categoryRepository.findByNameAndParent(req.getSecondLevelCategory(), topLevel.getName());
+
+            if (secondLevel == null) {
+                Category secondLevelCategory = new Category();
+                secondLevelCategory.setName(req.getSecondLevelCategory());
+                secondLevelCategory.setParentCategory(topLevel);
+                secondLevelCategory.setLevel(2);
+
+                secondLevel = categoryRepository.save(secondLevelCategory);
+            }
+
+            product.setCategory(secondLevel);
+
+        }
+
+        product.setSizes(req.getSizes());
+        product.setTitle(req.getTitle());
 
         return productRepository.save(product);
     }

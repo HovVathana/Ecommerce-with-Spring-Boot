@@ -70,9 +70,9 @@ public class AuthController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String token = jwtProvider.generateToken(authentication);
+        String token = jwtProvider.generateToken(authentication, "customer");
 
-        AuthResponse authResponse = new AuthResponse(token, "Sign up success!");
+        AuthResponse authResponse = new AuthResponse(token, "Sign up success!", "customer");
         authResponse.setJwt(token);
         authResponse.setMessage("Sign up success");
 
@@ -89,9 +89,11 @@ public class AuthController {
         Authentication authentication = authenticate(username, password);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String token = jwtProvider.generateToken(authentication);
+        User user = userRepository.findByEmail(username);
 
-        AuthResponse authResponse = new AuthResponse(token, "Sign in success!");
+        String token = jwtProvider.generateToken(authentication, user.getRole());
+
+        AuthResponse authResponse = new AuthResponse(token, "Sign in success!", user.getRole());
         authResponse.setJwt(token);
         authResponse.setMessage("Sign in success");
 

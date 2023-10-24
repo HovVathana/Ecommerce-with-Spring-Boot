@@ -1,5 +1,6 @@
 package com.vathana.ecommercespring.controller;
 
+import com.vathana.ecommercespring.exception.CartItemException;
 import com.vathana.ecommercespring.exception.ProductException;
 import com.vathana.ecommercespring.exception.UserException;
 import com.vathana.ecommercespring.model.Cart;
@@ -31,7 +32,7 @@ public class CartController {
     }
 
     @PutMapping("/add")
-    public ResponseEntity<ApiResponse> addItemToCart(@RequestBody AddItemRequest req, @RequestHeader("Authorization") String jwt) throws UserException, ProductException {
+    public ResponseEntity<ApiResponse> addItemToCart(@RequestBody AddItemRequest req, @RequestHeader("Authorization") String jwt) throws UserException, ProductException, CartItemException {
         User user = userService.findUserProfilesByJwt(jwt);
         cartService.addCartItem(user.getId(), req);
 

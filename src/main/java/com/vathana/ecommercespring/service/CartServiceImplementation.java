@@ -1,6 +1,8 @@
 package com.vathana.ecommercespring.service;
 
+import com.vathana.ecommercespring.exception.CartItemException;
 import com.vathana.ecommercespring.exception.ProductException;
+import com.vathana.ecommercespring.exception.UserException;
 import com.vathana.ecommercespring.model.Cart;
 import com.vathana.ecommercespring.model.CartItem;
 import com.vathana.ecommercespring.model.Product;
@@ -15,11 +17,13 @@ public class CartServiceImplementation implements CartService {
     private CartRepository cartRepository;
     private CartItemService cartItemService;
     private ProductService productService;
+    private UserService userService;
 
-    public CartServiceImplementation(CartRepository cartRepository, CartItemService cartItemService, ProductService productService) {
+    public CartServiceImplementation(CartRepository cartRepository, CartItemService cartItemService, ProductService productService, UserService userService) {
         this.cartRepository = cartRepository;
         this.cartItemService = cartItemService;
         this.productService = productService;
+        this.userService = userService;
     }
 
     @Override
@@ -32,9 +36,15 @@ public class CartServiceImplementation implements CartService {
     }
 
     @Override
-    public String addCartItem(Long userId, AddItemRequest req) throws ProductException {
+    public String addCartItem(Long userId, AddItemRequest req) throws ProductException, UserException, CartItemException {
 
         Cart cart = cartRepository.findByUserId(userId);
+        if (cart == null ) {
+
+            User user = userService.findUserById(userId);
+
+            cart = createCart(user);
+        }
         Product product = productService.findProductById(req.getProductId());
 
         CartItem isPresent = cartItemService.isCartItemExist(cart, product, req.getSize(), userId);
@@ -51,8 +61,17 @@ public class CartServiceImplementation implements CartService {
 
             CartItem createdCartItem = cartItemService.createCartItem(cartItem);
 
+
             cart.getCartItems().add(createdCartItem);
+        } else {
+            isPresent.setQuantity(isPresent.getQuantity() + 1);
+            isPresent.setPrice(isPresent.getPrice() * 2);
+            isPresent.setDiscountedPrice(isPresent.getDiscountedPrice() * 2);
+
+            cartItemService.updateCartItem(userId, isPresent.getId(), isPresent);
         }
+
+        findUserCart(userId);
 
         return "Item add to cart";
     }

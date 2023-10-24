@@ -62,7 +62,7 @@ public class AdminProductController {
     //}
 
     @PutMapping("/{productId}/update")
-    public ResponseEntity<Product> updateProduct(@RequestHeader("Authorization") String jwt, @RequestBody Product req, @PathVariable Long productId) throws ProductException, UserException {
+    public ResponseEntity<Product> updateProduct(@RequestHeader("Authorization") String jwt, @RequestBody CreateProductRequest req, @PathVariable Long productId) throws ProductException, UserException {
         User user = userService.findUserProfilesByJwt(jwt);
 
         if (!user.getRole().equalsIgnoreCase("admin")) {
